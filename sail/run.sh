@@ -7,8 +7,7 @@ export SAIL_RUNTIME__ENABLE_SECONDARY="true"
 export RUST_LOG=off
 export PYTHONWARNINGS=ignore
 
-#/Users/r/Desktop/lakesail/sail/target/release/sail spark server &
-/sail/target/release/sail spark server &
+sail/target/release/sail spark server &
 SAIL_PID=$!
 echo "SAIL_PID=$SAIL_PID"
 
