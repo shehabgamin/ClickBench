@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pysail.spark import SparkConnectServer
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 
@@ -21,16 +20,9 @@ os.environ["SAIL_PARQUET__REORDER_FILTERS"] = "true"
 os.environ["SAIL_RUNTIME__ENABLE_SECONDARY"] = "true"
 os.environ["SAIL_PARQUET__ALLOW_SINGLE_FILE_PARALLELISM"] = "true"
 
-server = SparkConnectServer()
-server.start()
-_, port = server.listening_address
-
-spark = SparkSession.builder.remote(f"sc://localhost:{port}").getOrCreate()
+spark = SparkSession.builder.remote(f"sc://localhost:{50051}").getOrCreate()
 
 df = spark.read.parquet("hits.parquet")
-# Do casting before creating the view so no need to change to unreadable integer dates in SQL
-df = df.withColumn("EventTime", F.timestamp_seconds("EventTime"))
-df = df.withColumn("EventDate", F.date_add(F.lit("1970-01-01"), F.col("EventDate")))
 df.createOrReplaceTempView("hits")
 
 for try_num in range(3):
@@ -38,9 +30,9 @@ for try_num in range(3):
         start = timeit.default_timer()
         result = spark.sql(query)
         res = result.toPandas()
+        end = timeit.default_timer()
         if try_num == 0:
             print(res)
-        end = timeit.default_timer()
         print("Time: ", end - start)
     except Exception as e:
         print(e);
